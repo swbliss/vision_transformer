@@ -157,7 +157,7 @@ def load_pretrained(*, pretrained_path, init_params, model_config, for_3d_input 
       restored_kernel,
       [init_params['embedding']['kernel'].shape[0], *[1 for _ in range(len(restored_kernel.shape))]])
 
-  if 'posembed_input' in restored_params.get('Transformer', {}) and is not for_3d_input:
+  if 'posembed_input' in restored_params.get('Transformer', {}) and not for_3d_input:
     # Rescale the grid of position embeddings. Param shape is (1,N,1024)
     posemb = restored_params['Transformer']['posembed_input']['pos_embedding']
     posemb_new = init_params['Transformer']['posembed_input']['pos_embedding']
