@@ -191,7 +191,9 @@ class Encoder(nn.Module):
           posemb_init=nn.initializers.normal(stddev=0.02),  # from BERT.
           name='posembed_input')(
               inputs)
-    x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=not train)
+      x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=not train)
+    else:
+      x = inputs
 
     # Input Encoder
     for lyr in range(self.num_layers):
