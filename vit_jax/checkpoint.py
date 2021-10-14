@@ -116,15 +116,17 @@ def load(path):
   return params
 
 
-def load_pretrained(*, pretrained_path, init_params, model_config):
+def load_pretrained(*, pretrained_path, init_params, model_config, for_3d_input = False):
   """Loads/converts a pretrained checkpoint for fine tuning.
 
   Args:
-    pretrained_path: File pointing to pretrained checkpoint.
+    pretrained_path: File pointing to pretrained checkpoint. (pretrained with
+      image, or 2d, input)
     init_params: Parameters from model. Will be used for the head of the model
       and to verify that the model is compatible with the stored checkpoint.
     model_config: Configuration of the model. Will be used to configure the head
       and rescale the position embeddings.
+    for_3d_input: Indicating newly built model is for 3d (video) input. 
 
   Returns:
     Parameters like `init_params`, but loaded with pretrained weights from
@@ -148,6 +150,12 @@ def load_pretrained(*, pretrained_path, init_params, model_config):
       restored_params['pre_logits'] = {}
   restored_params['head']['kernel'] = init_params['head']['kernel']
   restored_params['head']['bias'] = init_params['head']['bias']
+
+  if for_3d_input:
+    restored_kernel = restored_params['embedding']['kernel']
+    restored_params['embedding']['kernel'] = jnp.tile(
+      restored_kernel,
+      [init_params['embedding']['kernel'].shape[0], *[1 for _ in range(len(restored_kernel.shape))]])
 
   if 'posembed_input' in restored_params.get('Transformer', {}):
     # Rescale the grid of position embeddings. Param shape is (1,N,1024)
