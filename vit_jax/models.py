@@ -171,6 +171,7 @@ class Encoder(nn.Module):
   num_heads: int
   dropout_rate: float = 0.1
   attention_dropout_rate: float = 0.1
+  for_3d_input: bool = False
 
   @nn.compact
   def __call__(self, inputs, *, train):
@@ -185,10 +186,11 @@ class Encoder(nn.Module):
     """
     assert inputs.ndim == 3  # (batch, len, emb)
 
-    x = AddPositionEmbs(
-        posemb_init=nn.initializers.normal(stddev=0.02),  # from BERT.
-        name='posembed_input')(
-            inputs)
+    if not self.for_3d_input:
+      x = AddPositionEmbs(
+          posemb_init=nn.initializers.normal(stddev=0.02),  # from BERT.
+          name='posembed_input')(
+              inputs)
     x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=not train)
 
     # Input Encoder
@@ -368,7 +370,7 @@ class VisionTransformer3D(nn.Module):
       cls = jnp.tile(cls, [n, 1, 1])
       x = jnp.concatenate([cls, x], axis=1)
 
-    x = Encoder(name='Transformer', **self.transformer)(x, train=train)
+    x = Encoder(name='Transformer', for_3d_input=True, **self.transformer)(x, train=train)
 
     if self.classifier == 'token':
       x = x[:, 0]
