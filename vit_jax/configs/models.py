@@ -187,6 +187,14 @@ def get_b32_config():
   config.patches.size = (32, 32)
   return config
 
+@_register
+def get_3d_b32_config():
+  """Returns the ViT-B/32 configuration."""
+  config = get_b16_config()
+  config.name = 'ViT3D-B_32'
+  config.patches.size = (32, 32, 3)
+  return config
+
 
 @_register
 def get_l32_config():
